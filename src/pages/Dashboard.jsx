@@ -9,12 +9,16 @@ import NoTransactions from '../components/NoTransactions';
 import TransactionsTable from '../components/TransactionsTable';
 import IncomeModal from '../components/IncomeModal';
 import ExpenseModal from '../components/ExpenseModal';
-import { addDoc, collection, getDocs, query, deleteDoc } from 'firebase/firestore';
+import EditTransactionModal from '../components/EditTransactionModal';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import Loader from '../components/Loader';
+import Button from '../components/button';
+
+import { addDoc, collection, getDocs, query, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import toast from 'react-hot-toast';
 import { parse, unparse } from 'papaparse';
-import Loader from '../components/Loader';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -41,6 +45,11 @@ const Dashboard = () => {
   // Animation state for card positions
   const [expenseCardRect, setExpenseCardRect] = useState(null);
   const [incomeCardRect, setIncomeCardRect] = useState(null);
+
+  // Edit & Delete states
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [deletingTransaction, setDeletingTransaction] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Validation function
   const validateForm = (formData, type) => {
@@ -151,8 +160,8 @@ const Dashboard = () => {
       const q = query(collection(db, `users/${user.uid}/transactions`));
       const querySnapshot = await getDocs(q);
       let transactionsArray = [];
-      querySnapshot.forEach((doc) => {
-        transactionsArray.push(doc.data());
+      querySnapshot.forEach((docSnap) => {
+        transactionsArray.push({ ...docSnap.data(), id: docSnap.id });
       });
       setTransactions(transactionsArray);
       console.log("Transactions Array", transactionsArray);
@@ -181,8 +190,6 @@ const Dashboard = () => {
     setTotalExpenses(expensesTotal);
     setBalance(incomeTotal - expensesTotal);
   };
-
-
 
   // Updated handleAddExpense with validation
   const handleAddExpense = (e) => {
@@ -240,36 +247,90 @@ const Dashboard = () => {
     setExpenseErrors({});
   };
 
-const resetBalance = async () => {
-  try {
-    setLoading(true);
+  const resetBalance = async () => {
+    try {
+      setLoading(true);
+      
+      // Delete all transactions from Firestore
+      const q = query(collection(db, `users/${user.uid}/transactions`));
+      const querySnapshot = await getDocs(q);
+      
+      // Delete each document
+      const deletePromises = [];
+      querySnapshot.forEach((doc) => {
+        deletePromises.push(deleteDoc(doc.ref));
+      });
+      
+      await Promise.all(deletePromises);
+      
+      // Reset local state
+      setBalance(0);
+      setTotalIncome(0);
+      setTotalExpenses(0);
+      setTransactions([]);
+      
+      toast.success("All transactions deleted!");
+      setLoading(false);
+    } catch (error) {
+      console.error("Error deleting transactions:", error);
+      toast.error("Failed to delete transactions");
+      setLoading(false);
+    }
+  };
+
+  // Edit handler
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  // Update handler
+  const handleUpdate = async (transactionId, updatedData) => {
+    try {
+      // Firebase mein update
+      const transactionRef = doc(db, `users/${user.uid}/transactions`, transactionId);
+      await updateDoc(transactionRef, updatedData);
+      
+      // Local state update
+      setTransactions(prev =>
+        prev.map(t => t.id === transactionId ? { ...t, ...updatedData } : t)
+      );
+      
+      toast.success("Transaction Updated!");
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast.error("Failed to update transaction");
+      throw error;
+    }
+  };
+
+  // Delete click handler
+  const handleDeleteClick = (transactionId) => {
+    const transaction = transactions.find(t => t.id === transactionId);
+    setDeletingTransaction(transaction);
+  };
+
+  // Delete confirm handler
+  const handleDeleteConfirm = async () => {
+    if (!deletingTransaction) return;
     
-    // Delete all transactions from Firestore
-    const q = query(collection(db, `users/${user.uid}/transactions`));
-    const querySnapshot = await getDocs(q);
-    
-    // Delete each document
-    const deletePromises = [];
-    querySnapshot.forEach((doc) => {
-      deletePromises.push(deleteDoc(doc.ref));
-    });
-    
-    await Promise.all(deletePromises);
-    
-    // Reset local state
-    setBalance(0);
-    setTotalIncome(0);
-    setTotalExpenses(0);
-    setTransactions([]);
-    
-    toast.success("All transactions deleted!");
-    setLoading(false);
-  } catch (error) {
-    console.error("Error deleting transactions:", error);
-    toast.error("Failed to delete transactions");
-    setLoading(false);
-  }
-};
+    setDeleteLoading(true);
+    try {
+      // Firebase se delete
+      const transactionRef = doc(db, `users/${user.uid}/transactions`, deletingTransaction.id);
+      await deleteDoc(transactionRef);
+      
+      // Local state se delete
+      setTransactions(prev => prev.filter(t => t.id !== deletingTransaction.id));
+      
+      setDeletingTransaction(null);
+      toast.success("Transaction Deleted!");
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      toast.error("Failed to delete transaction");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const filteredTransactions = transactions
     .filter(transaction =>
@@ -281,7 +342,6 @@ const resetBalance = async () => {
       if (sortBy === 'amount') return b.amount - a.amount;
       return a.name.localeCompare(b.name);
     });
-
 
   function exportCSV(){
     // Specifying fields and data explicitly
@@ -324,7 +384,6 @@ const resetBalance = async () => {
       toast.error(e.message);
     }
   }
-
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -370,6 +429,8 @@ const resetBalance = async () => {
               filteredTransactions={filteredTransactions}
               exportCSV={exportCSV}
               importFromCSV={importFromCSV}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
             />
 
             {/* Modals with validation */}
@@ -391,10 +452,27 @@ const resetBalance = async () => {
               errors={expenseErrors}
               expenseCardRect={expenseCardRect}
             />
+
+            {/* Edit & Delete Modals */}
+            {editingTransaction && (
+              <EditTransactionModal
+                transaction={editingTransaction}
+                onClose={() => setEditingTransaction(null)}
+                onUpdate={handleUpdate}
+              />
+            )}
+
+            {deletingTransaction && (
+              <DeleteConfirmModal
+                transaction={deletingTransaction}
+                onClose={() => setDeletingTransaction(null)}
+                onConfirm={handleDeleteConfirm}
+                loading={deleteLoading}
+              />
+            )}
           </div>
         </>
       )}
-
     </div>
   );
 };
