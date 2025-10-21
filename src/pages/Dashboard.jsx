@@ -12,7 +12,7 @@ import ExpenseModal from '../components/ExpenseModal';
 import EditTransactionModal from '../components/EditTransactionModal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import Loader from '../components/Loader';
-import Button from '../components/button';
+import Button from '../components/Button';
 
 import { addDoc, collection, getDocs, query, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
