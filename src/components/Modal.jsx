@@ -1,4 +1,4 @@
-import Button from './button';
+import Button from './Button';
 import { CardHeader, CardTitle, CardContent } from './Card';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';

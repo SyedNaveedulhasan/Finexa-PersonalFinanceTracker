@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardContent } from './Card';
-import Button from './button';
+import Button from './Button';
 import { DollarSign, AlertTriangle } from 'lucide-react';
 
 const BalanceCard = ({ balance, resetBalance }) => {

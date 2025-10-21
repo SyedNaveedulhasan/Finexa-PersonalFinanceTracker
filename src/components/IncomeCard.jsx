@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Card, CardHeader, CardContent } from './Card';
-import Button from './button';
+import Button from './Button';
 import { TrendingUp, Plus } from 'lucide-react';
 
 const IncomeCard = ({ totalIncome, setShowIncomeModal, setIncomeCardRect }) => {

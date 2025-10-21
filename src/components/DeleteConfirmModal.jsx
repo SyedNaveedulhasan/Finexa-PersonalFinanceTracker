@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import Button from './button';
+import Button from './Button';
 
 const DeleteConfirmModal = ({ transaction, onClose, onConfirm, loading }) => {
   return (

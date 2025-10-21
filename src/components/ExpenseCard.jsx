@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardContent } from './Card';
-import Button from './button';
+import Button from './Button';
 import { TrendingDown, Plus } from 'lucide-react';
 import { useRef } from 'react';
 

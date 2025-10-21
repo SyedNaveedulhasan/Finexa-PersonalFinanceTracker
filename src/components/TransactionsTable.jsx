@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle } from './Card';
-import Button from './button';
+import Button from './Button';
 import Input from './Input';
 import Badge from './Badge';
 import { Search, Download, Upload, FileText, ChevronLeft, ChevronRight, Filter, Edit2, Trash2 } from 'lucide-react';
