@@ -1,0 +1,42 @@
+# ⚙️ Node modules (dependencies)
+node_modules/
+
+# ⚙️ Build output (production build)
+dist/
+build/
+
+# ⚙️ Environment variables (very important - Firebase keys, API keys)
+.env
+.env.local
+.env.development
+.env.production
+
+# ⚙️ Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ⚙️ OS-specific junk files
+.DS_Store
+Thumbs.db
+
+# ⚙️ Editor settings (VS Code, JetBrains, etc.)
+.vscode/
+.idea/
+*.swp
+
+# ⚙️ Temporary files
+*.tmp
+*.temp
+
+# ⚙️ Firebase cache files
+.firebase/
+.firebaserc
+
+# ⚙️ Local environment & test coverage
+coverage/
+*.log
+*.pid
+*.seed
+*.pid.lock
