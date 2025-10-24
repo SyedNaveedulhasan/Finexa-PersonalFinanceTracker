@@ -285,7 +285,7 @@ const Dashboard = () => {
   // Update handler
   const handleUpdate = async (transactionId, updatedData) => {
     try {
-      // Firebase mein update
+      // Update in Firebase
       const transactionRef = doc(db, `users/${user.uid}/transactions`, transactionId);
       await updateDoc(transactionRef, updatedData);
       
@@ -314,11 +314,11 @@ const Dashboard = () => {
     
     setDeleteLoading(true);
     try {
-      // Firebase se delete
+      // Delete from Firebase 
       const transactionRef = doc(db, `users/${user.uid}/transactions`, deletingTransaction.id);
       await deleteDoc(transactionRef);
       
-      // Local state se delete
+      // Delete from Local state 
       setTransactions(prev => prev.filter(t => t.id !== deletingTransaction.id));
       
       setDeletingTransaction(null);

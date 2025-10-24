@@ -7,13 +7,12 @@ const COLORS = ['#059669', '#64748b', '#047857', '#10b981', '#14b8a6', '#0491d1'
 const SpendingChart = ({ transactions }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
-  // Real data se spending data generate karna
+  // Generate spending data from the Real data
   const getSpendingData = () => {
     if (!transactions || transactions.length === 0) {
       return [];
     }
 
-    // Sirf expenses ko filter kar ke category wise group karna
     const categoryData = {};
     
     transactions
@@ -28,7 +27,7 @@ const SpendingChart = ({ transactions }) => {
         }
       });
 
-    // Object ko array mein convert karna
+    // Convert object into array
     return Object.entries(categoryData).map(([name, value]) => ({
       name,
       value

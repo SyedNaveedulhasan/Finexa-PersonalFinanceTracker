@@ -2,13 +2,13 @@ import { Card, CardHeader, CardTitle, CardContent } from './Card';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 const FinancialChart = ({ transactions }) => {
-  // Real data se chart data generate karna
+  // Generate chart data from the real data
   const getChartData = () => {
     if (!transactions || transactions.length === 0) {
       return [];
     }
 
-    // Transactions ko month-year ke hisab se group karna
+  
     const monthlyData = {};
     
     transactions.forEach(transaction => {
@@ -41,7 +41,7 @@ const FinancialChart = ({ transactions }) => {
       }
     });
 
-    // Array mein convert karna aur date ke hisab se sort karna
+
     const chartArray = Object.values(monthlyData)
       .sort((a, b) => a.sortDate - b.sortDate)
       .map(item => {
@@ -56,7 +56,7 @@ const FinancialChart = ({ transactions }) => {
 
     console.log('Chart Data:', chartArray);
     
-    // Last 12 months ka data return karna
+    // Return Last 12 months data 
     return chartArray.slice(-12);
   };
 
